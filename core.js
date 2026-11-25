@@ -556,5 +556,16 @@ const CARDS=[
  ['Classic nine-panel groups','Heart 2, 3, 5; pump 1, 4, 7; gas exchange 6, 8, 9']
 ];
 
-root.CPET={BASE,SCENARIOS,makeParams,healthyTwin,simulate,metrics,metricRows,interpret,weber,vclass,plot,PANELS,panelSpecs,REFS,cite,CHAPTERS,CASES,CARDS};
+
+/* ───────────────────────── 7. How to cite ───────────────────────── */
+const META={name:'CPET Lab',version:'1.0',year:2026,author:'Parcha, Vibhu',authorShort:'Parcha V',url:'https://torsades-de-pointes.github.io/cpet-lab/',repo:'https://github.com/torsades-de-pointes/cpet-lab'};
+function citeBlock(){
+ const d=new Date(),acc=d.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),iso=d.toISOString().slice(0,10);
+ const ama=META.authorShort+'. '+META.name+': cardiopulmonary exercise testing simulator and course. Version '+META.version+'. Published '+META.year+'. Accessed '+acc+'. '+META.url;
+ const apa='Parcha, V. ('+META.year+'). '+META.name+': Cardiopulmonary exercise testing simulator and course (Version '+META.version+') [Computer software]. '+META.url;
+ const bib='@software{cpetlab'+META.year+',\n  title   = {'+META.name+': Cardiopulmonary Exercise Testing Simulator and Course},\n  author  = {'+META.author+'},\n  year    = {'+META.year+'},\n  version = {'+META.version+'},\n  url     = {'+META.url+'},\n  urldate = {'+iso+'},\n  note    = {Open-source educational simulator of the nine-panel CPET plot. MIT License.}\n}';
+ return {ama,apa,bib};
+}
+
+root.CPET={META,citeBlock,BASE,SCENARIOS,makeParams,healthyTwin,simulate,metrics,metricRows,interpret,weber,vclass,plot,PANELS,panelSpecs,REFS,cite,CHAPTERS,CASES,CARDS};
 })(typeof window!=='undefined'?window:globalThis);

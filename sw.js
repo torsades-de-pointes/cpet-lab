@@ -1,20 +1,25 @@
 /* CPET Lab service worker: same-origin only.
    Bump CACHE (for example cpetlab-v2) every time you deploy changes. */
-const CACHE = 'cpetlab-v1';
+const CACHE = 'cpetlab-v2';
 const ASSETS = [
   './',
   './index.html',
   './mobile.html',
   './core.js',
   './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-maskable-512.png',
-  './icons/apple-touch-icon-180.png'
+  './icon-192.png',
+  './icon-512.png',
+  './icon-maskable-512.png',
+  './apple-touch-icon-180.png'
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // Cache each file on its own, so one missing file cannot block installation.
+  event.waitUntil(
+    caches.open(CACHE)
+      .then((c) => Promise.allSettled(ASSETS.map((a) => c.add(a))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (event) => {

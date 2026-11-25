@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use CPET Lab in teaching or research, please cite it as below."
+type: software
+title: "CPET Lab: Cardiopulmonary Exercise Testing Simulator and Course"
+version: "1.0"
+date-released: "2026-11-25"
+authors:
+  - family-names: "Parcha"
+    given-names: "Vibhu"
+url: "https://torsades-de-pointes.github.io/cpet-lab/"
+repository-code: "https://github.com/torsades-de-pointes/cpet-lab"
+license: MIT
+keywords:
+  - cardiopulmonary exercise testing
+  - CPET
+  - nine-panel plot
+  - heart failure
+  - medical education
+  - FOAMed

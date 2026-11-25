@@ -12,8 +12,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="CPET Lab">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <style>
 :root{--ff:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;--fm:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
   --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)}
@@ -23,7 +23,8 @@
   --c1:#6b9fff;--c2:#ff6b7a;--c3:#3dbf8a;--gh:#46506e;--pl:#0d1020;--gr:#161c33;--good:#3dbf8a;--bad:#ff6b7a}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{touch-action:manipulation;-webkit-text-size-adjust:100%}
-body{background:var(--bg);color:var(--tx);font-family:var(--ff);font-size:15px;line-height:1.5;padding-top:var(--st);padding-bottom:calc(64px + var(--sb))}
+body{background:var(--bg);color:var(--tx);font-family:var(--ff);font-size:15px;line-height:1.5;padding-top:var(--st);padding-bottom:calc(64px + var(--sb));max-width:600px;margin:0 auto}
+@media(min-width:601px){html{background:var(--bg)}body{border-left:1px solid var(--bd);border-right:1px solid var(--bd);min-height:100vh}#tabs{max-width:600px;margin:0 auto}}
 a{color:var(--ac);text-decoration:none}
 button{font-family:inherit;-webkit-tap-highlight-color:transparent}
 #hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--su);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:10}
@@ -171,9 +172,9 @@ sup.cite a{font-family:var(--fm);font-size:10px;padding:0 2px}
 </section>
 
 <section class="view" id="v-ref">
- <div class="seg" id="refSeg"><button data-go="nums" class="on">Numbers</button><button data-go="refs">References</button><button data-go="model">About</button></div>
+ <div class="seg" id="refSeg"><button data-go="nums" class="on">Numbers</button><button data-go="refs">References</button><button data-go="model">About</button><button data-go="cite">Cite</button></div>
  <div id="refDoc"></div>
- <p class="foot">For education only. Not for clinical use. MIT licence.<br><a href="index.html?desktop=1">Desktop version</a></p>
+ <p class="foot">CPET Lab version 1.0 · For education only. Not for clinical use. MIT licence.<br><a href="index.html?desktop=1">Desktop version</a></p>
 </section>
 
 <nav id="tabs">
@@ -290,7 +291,13 @@ const NUMS=[['Peak VO₂','85% predicted or more normal. Weber A >20, B 16–20,
 function refPage(p){document.querySelectorAll('#refSeg button').forEach(b=>b.classList.toggle('on',b.dataset.go===p));
  if(p==='nums')$('refDoc').innerHTML='<div class="tbl"><table><tr><th>Variable</th><th>Threshold</th><th></th></tr>'+NUMS.map(r=>'<tr><td><b>'+r[0]+'</b></td><td>'+r[1]+'</td><td>'+C.cite(r[2])+'</td></tr>').join('')+'</table></div>';
  if(p==='refs')$('refDoc').innerHTML='<p style="font-size:13px;color:var(--t2)">Checked against PubMed. "Full text" opens the free PubMed Central copy where one exists.</p><ol class="refs">'+C.REFS.map(r=>'<li id="ref-'+r.id+'">'+r.a+' '+r.t+' <i>'+r.j+'</i>. '+r.y+(r.v?';'+r.v:'')+'.<div class="links">'+(r.pmid?'<a href="https://pubmed.ncbi.nlm.nih.gov/'+r.pmid+'/" target="_blank" rel="noopener">PubMed</a>':'')+(r.doi?'<a href="https://doi.org/'+r.doi+'" target="_blank" rel="noopener">Publisher</a>':'')+(r.pmc?'<a href="https://pmc.ncbi.nlm.nih.gov/articles/'+r.pmc+'/" target="_blank" rel="noopener">Full text</a>':'')+'</div></li>').join('')+'</ol>';
- if(p==='model')$('refDoc').innerHTML='<div class="card" style="font-size:14px">'+C.cite('<p>Each test is 2 minutes of rest, 2 minutes of unloaded pedalling, a 10 minute ramp and 3 minutes of recovery, sampled every 10 seconds with noise added. VCO₂ steepens at VT1 by bicarbonate buffering [13]; VE follows VCO₂ through the VE/VCO₂ slope; PETO₂ comes from the alveolar gas equation. The dotted trace is a healthy person of the same age and size.</p><p style="margin-top:8px">The model reproduces patterns, not exact values. It does not model blood pressure, ECG, flow-volume loops or invasive haemodynamics.</p><p style="margin-top:8px"><b>For education only.</b></p>')+'</div>';}
+ if(p==='model')$('refDoc').innerHTML='<div class="card" style="font-size:14px">'+C.cite('<p>Each test is 2 minutes of rest, 2 minutes of unloaded pedalling, a 10 minute ramp and 3 minutes of recovery, sampled every 10 seconds with noise added. VCO₂ steepens at VT1 by bicarbonate buffering [13]; VE follows VCO₂ through the VE/VCO₂ slope; PETO₂ comes from the alveolar gas equation. The dotted trace is a healthy person of the same age and size.</p><p style="margin-top:8px">The model reproduces patterns, not exact values. It does not model blood pressure, ECG, flow-volume loops or invasive haemodynamics.</p><p style="margin-top:8px"><b>For education only.</b></p>')+'</div>';
+if(p==='cite'){const c=C.citeBlock();$('refDoc').innerHTML='<p style="font-size:14px;color:var(--t2);margin-bottom:6px">If CPET Lab helped your teaching or work, please cite it. The access date fills in automatically.</p>'+
+  [['AMA',c.ama],['APA',c.apa],['BibTeX',c.bib]].map((x,i)=>'<div class="card"><div class="row" style="justify-content:space-between"><b>'+x[0]+'</b><button class="btn sm" data-copy="cb'+i+'">Copy</button></div><pre id="cb'+i+'" class="eq" style="white-space:pre-wrap">'+x[1].replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</pre></div>').join('')+
+  '<p style="font-size:13px;color:var(--t2)">Please also cite the primary sources for any threshold you quote (see References). Version '+C.META.version+'.</p>';}}
+$('refDoc').addEventListener('click',e=>{const id=e.target.dataset.copy;if(!id)return;const t=document.getElementById(id).textContent;
+ const done=ok=>{e.target.textContent=ok?'Copied':'Select and copy';setTimeout(()=>e.target.textContent='Copy',1800);};
+ if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>done(true),()=>done(false));else done(false);});
 $('refSeg').onclick=e=>{const b=e.target.closest('button');if(b)refPage(b.dataset.go);};
 
 load('normal');$('scen').value='normal';refPage('nums');setTheme(store.get('mtheme','morning'));

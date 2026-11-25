@@ -15,14 +15,14 @@ if(v==='mobile'||(!v&&small))location.replace('mobile.html'+location.hash);})();
 <meta property="og:title" content="CPET Lab · Nine-panel simulator and course">
 <meta property="og:description" content="Learn cardiopulmonary exercise testing from first principles. Free and open for all.">
 <meta property="og:type" content="website">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#f3ede4">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="CPET Lab">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Nunito:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -280,6 +280,7 @@ footer{max-width:1480px;margin:0 auto;padding:0 22px 40px;color:var(--ink3);font
    <button data-go="nums" class="on"><span class="num">1</span><span><span class="tt">Key numbers</span></span></button>
    <button data-go="refs"><span class="num">2</span><span><span class="tt">References</span></span></button>
    <button data-go="model"><span class="num">3</span><span><span class="tt">About the model</span></span></button>
+   <button data-go="cite"><span class="num">4</span><span><span class="tt">How to cite</span></span></button>
   </aside>
   <article class="panel doc" id="refDoc"></article>
  </div>
@@ -287,7 +288,7 @@ footer{max-width:1480px;margin:0 auto;padding:0 22px 40px;color:var(--ink3);font
 </main>
 
 <div class="modal" id="modal"><div class="panel box" id="mbox"></div></div>
-<footer>CPET Lab is for education only. It is not a clinical tool and must not be used for patient care. Open source under the MIT licence.</footer>
+<footer>CPET Lab version 1.0 · <a href="#ref" id="citeLink">How to cite</a> · CPET Lab is for education only. It is not a clinical tool and must not be used for patient care. Open source under the MIT licence.</footer>
 
 <script src="core.js"></script>
 <script>
@@ -421,10 +422,17 @@ const NUMS=[['Peak VO₂','85% predicted or more is normal. Weber A above 20, B 
 function refPage(p){document.querySelectorAll('#v-ref .list button').forEach(b=>b.classList.toggle('on',b.dataset.go===p));
  if(p==='nums')$('refDoc').innerHTML='<div class="kick">Reference</div><h2>Key numbers</h2><p class="lead">Thresholds used in this app, with their sources.</p><div class="tbl"><table><tr><th>Variable</th><th>Threshold</th><th>Source</th></tr>'+NUMS.map(r=>'<tr><td><b>'+r[0]+'</b></td><td>'+r[1]+'</td><td>'+C.cite(r[2])+'</td></tr>').join('')+'</table></div>';
  if(p==='refs')$('refDoc').innerHTML='<div class="kick">Reference</div><h2>References</h2><p class="lead">Each entry was checked against PubMed. "Full text" links go to the free PubMed Central copy where one exists; otherwise use the publisher link.</p><ol class="refs">'+C.REFS.map(r=>'<li id="ref-'+r.id+'">'+r.a+' '+r.t+' <i>'+r.j+'</i>. '+r.y+(r.v?';'+r.v:'')+'.<span class="badge">'+r.topic+'</span><div class="links">'+(r.pmid?'<a href="https://pubmed.ncbi.nlm.nih.gov/'+r.pmid+'/" target="_blank" rel="noopener">PubMed '+r.pmid+'</a>':'')+(r.doi?'<a href="https://doi.org/'+r.doi+'" target="_blank" rel="noopener">Publisher</a>':'')+(r.pmc?'<a href="https://pmc.ncbi.nlm.nih.gov/articles/'+r.pmc+'/" target="_blank" rel="noopener">Full text (PMC)</a>':'')+'</div></li>').join('')+'</ol>';
- if(p==='model')$('refDoc').innerHTML='<div class="kick">Reference</div><h2>About the model</h2><p class="lead">How the curves are made, and what they cannot do.</p>'+C.cite('<p>Each test is a 2 minute rest, 2 minutes of unloaded pedalling, a 10 minute individualised ramp and 3 minutes of recovery, sampled every 10 seconds with breath-by-breath noise added.</p><ul><li>VO₂ rises with work at a set ΔVO₂/ΔWR, with an optional late flattening.</li><li>VCO₂ follows VO₂ with a slope near 1 until VT1, then steepens as bicarbonate buffering adds CO₂ (the V-slope relationship) [13].</li><li>VE is a linear function of VCO₂ (the VE/VCO₂ slope) with extra ventilation after the respiratory compensation point, an optional ceiling at MVV and optional oscillation.</li><li>HR rises with VO₂ or with work; the O₂ pulse is VO₂ divided by HR.</li><li>PETO₂ comes from the simplified alveolar gas equation.</li><li>The dotted trace is a healthy person with the same age, size and predicted values.</li></ul><p>The model reproduces the shape of each pattern, not the exact values of any patient. It does not model blood pressure, ECG changes, flow-volume loops, lactate or invasive haemodynamics. Interpretation rules are simplified from published statements [1,2,3].</p><p><b>For education only.</b> Not for clinical use. Source code is open under the MIT licence.</p>');}
+ if(p==='model')$('refDoc').innerHTML='<div class="kick">Reference</div><h2>About the model</h2><p class="lead">How the curves are made, and what they cannot do.</p>'+C.cite('<p>Each test is a 2 minute rest, 2 minutes of unloaded pedalling, a 10 minute individualised ramp and 3 minutes of recovery, sampled every 10 seconds with breath-by-breath noise added.</p><ul><li>VO₂ rises with work at a set ΔVO₂/ΔWR, with an optional late flattening.</li><li>VCO₂ follows VO₂ with a slope near 1 until VT1, then steepens as bicarbonate buffering adds CO₂ (the V-slope relationship) [13].</li><li>VE is a linear function of VCO₂ (the VE/VCO₂ slope) with extra ventilation after the respiratory compensation point, an optional ceiling at MVV and optional oscillation.</li><li>HR rises with VO₂ or with work; the O₂ pulse is VO₂ divided by HR.</li><li>PETO₂ comes from the simplified alveolar gas equation.</li><li>The dotted trace is a healthy person with the same age, size and predicted values.</li></ul><p>The model reproduces the shape of each pattern, not the exact values of any patient. It does not model blood pressure, ECG changes, flow-volume loops, lactate or invasive haemodynamics. Interpretation rules are simplified from published statements [1,2,3].</p><p><b>For education only.</b> Not for clinical use. Source code is open under the MIT licence.</p>');
+if(p==='cite'){const c=C.citeBlock();$('refDoc').innerHTML='<div class="kick">Reference</div><h2>How to cite</h2><p class="lead">If CPET Lab helped your teaching, a talk or a paper, please cite it. The access date fills in automatically.</p>'+
+  [['AMA (medical journals)',c.ama],['APA',c.apa],['BibTeX',c.bib]].map((x,i)=>'<div class="stage"><div class="row" style="justify-content:space-between"><p class="label" style="margin:0">'+x[0]+'</p><button class="btn sm" data-copy="cb'+i+'">Copy</button></div><pre id="cb'+i+'" class="eq" style="white-space:pre-wrap;margin-bottom:0">'+x[1].replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</pre></div>').join('')+
+  '<p>Please also cite the primary sources behind any threshold you quote. They are listed under References. The source code is at <a href="'+C.META.repo+'" target="_blank" rel="noopener">'+C.META.repo.replace('https://','')+'</a>, where GitHub’s “Cite this repository” button gives the same citation.</p><p style="color:var(--ink3);font-size:12.5px">Version '+C.META.version+'. Code under the MIT licence; teaching content under CC BY 4.0.</p>';}}
+$('refDoc').addEventListener('click',e=>{const id=e.target.dataset.copy;if(!id)return;const t=document.getElementById(id).textContent;
+ const done=ok=>{e.target.textContent=ok?'Copied':'Select and copy';setTimeout(()=>e.target.textContent='Copy',1800);};
+ if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>done(true),()=>done(false));else done(false);});
 document.querySelector('#v-ref .list').onclick=e=>{const b=e.target.closest('button');if(b)refPage(b.dataset.go);};
 
 /* ── start ── */
+$('citeLink').onclick=e=>{e.preventDefault();show('ref');refPage('cite');};
 chList();openChapter(store.get('lastCh','fick'));caseList();openCase(0);refPage('nums');
 load('normal');$('scen').value='normal';
 setTheme(store.get('theme','champagne'));

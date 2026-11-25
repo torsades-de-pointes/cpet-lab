@@ -56,7 +56,7 @@ mobile.html     phone build
 core.js         shared physiology model, plotting, chapters, cases, cards, references
 manifest.json   app name, icons, colours
 sw.js           offline cache
-icons/          192, 512, maskable 512 and Apple 180 px icons
+          192, 512, maskable 512 and Apple 180 px icons
 ```
 
 ## Updating
@@ -66,6 +66,30 @@ Edit the files, then open `sw.js` and bump `CACHE` (for example `cpetlab-v1` to 
 ## The model
 
 Each test is 2 minutes of rest, 2 minutes of unloaded pedalling, a 10 minute individualised ramp and 3 minutes of recovery, sampled every 10 seconds with breath-by-breath noise. VO₂ rises with work at a set ΔVO₂/ΔWR with optional late flattening; VCO₂ steepens at VT1 by bicarbonate buffering; VE follows VCO₂ through the VE/VCO₂ slope with extra ventilation after the respiratory compensation point; PETO₂ comes from the simplified alveolar gas equation. The model reproduces patterns, not the exact values of any patient. It does not model blood pressure, ECG, flow-volume loops, lactate or invasive haemodynamics.
+
+## How to Cite
+
+```
+Parcha V. CPET Lab: cardiopulmonary exercise testing simulator and course. Version 1.0. Published 2026.
+Accessed [date]. https://torsades-de-pointes.github.io/cpet-lab/
+```
+
+BibTeX:
+
+```bibtex
+@software{cpetlab2026,
+  title   = {CPET Lab: Cardiopulmonary Exercise Testing Simulator and Course},
+  author  = {Parcha, Vibhu},
+  year    = {2026},
+  version = {1.0},
+  url     = {https://torsades-de-pointes.github.io/cpet-lab/},
+  note    = {Open-source educational simulator of the nine-panel CPET plot. MIT License.}
+}
+```
+
+The **Reference → How to cite** page in the app gives AMA, APA and BibTeX with today's access date and a copy button. When you quote a threshold, please also cite its primary source below.
+
+---
 
 ## References
 
@@ -98,6 +122,6 @@ All entries were checked against PubMed.
 
 ## Licence
 
-MIT. See [LICENSE](LICENSE).
+Code: MIT. See [LICENSE](LICENSE). Teaching content: CC BY 4.0. Attribution is appreciated.
 
 > **Not a clinical tool.** CPET Lab is for education only and must never be used for patient care or clinical decision-making.
