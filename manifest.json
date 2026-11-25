@@ -1,0 +1,18 @@
+{
+  "name": "CPET Lab · Cardiopulmonary Exercise Testing",
+  "short_name": "CPET Lab",
+  "description": "A free, open, offline cardiopulmonary exercise testing simulator and course built around the nine-panel plot.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3ede4",
+  "theme_color": "#f3ede4",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["education", "medical"],
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

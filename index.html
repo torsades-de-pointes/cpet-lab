@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="champagne">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPET Lab · Cardiopulmonary Exercise Testing Simulator</title>
+<script>
+/* Phones go to the mobile build unless the visitor chose desktop. */
+(function(){var v=null;try{var q=location.search;if(/[?&]desktop=1/.test(q))localStorage.setItem('cpetlab_view','desktop');v=localStorage.getItem('cpetlab_view');}catch(e){}
+var small=Math.min(screen.width,screen.height)<=600&&window.matchMedia&&matchMedia('(pointer:coarse)').matches;
+if(v==='mobile'||(!v&&small))location.replace('mobile.html'+location.hash);})();
+</script>
+<meta name="description" content="A free, open, interactive cardiopulmonary exercise testing (CPET) simulator and course. Read the nine-panel plot from first principles, work through cases, and review with spaced repetition. FOAMed.">
+<meta name="color-scheme" content="light dark">
+<meta property="og:title" content="CPET Lab · Nine-panel simulator and course">
+<meta property="og:description" content="Learn cardiopulmonary exercise testing from first principles. Free and open for all.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#f3ede4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CPET Lab">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Nunito:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* CPET Lab · Champagne / Monitor themes (shared palette with CardioMechanics) */
+:root{
+  --font-d:'Fraunces','Iowan Old Style','Palatino Linotype',Georgia,serif;
+  --font-b:'Nunito','Segoe UI',system-ui,sans-serif;
+  --font-m:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --r:10px; --r-sm:7px;
+}
+[data-theme="champagne"]{
+  --bg:#f3ede4; --panel:#fffdfa; --panel2:#f8f2e9; --inset:#f5efe5;
+  --line:#e3d9ca; --line2:#efe7db;
+  --ink:#2a2320; --ink2:#5f5449; --ink3:#9c8f80;
+  --accent:#a8465c; --accent-soft:#f9edef;
+  --plot-bg:#fffdf9; --grid:#efe6d8;
+  --c1:#41608f; --c2:#b8384f; --c3:#2f7a5c; --c4:#a9761b; --ghost:#b3a595;
+  --good:#2f7a5c; --bad:#b8384f;
+  --shadow:0 1px 2px rgba(90,70,45,.05),0 6px 22px rgba(90,70,45,.07);
+  --shadow-sm:0 1px 2px rgba(90,70,45,.06);
+}
+[data-theme="monitor"]{
+  --bg:#080b10; --panel:#0f151d; --panel2:#141c26; --inset:#0c1219;
+  --line:#1f2a37; --line2:#18222e;
+  --ink:#e6edf5; --ink2:#93a1b3; --ink3:#54636f;
+  --accent:#ff5a6e; --accent-soft:#25121a;
+  --plot-bg:#0a0f15; --grid:#141e2a;
+  --c1:#5f8dff; --c2:#ff5a6e; --c3:#2ee3a6; --c4:#f3b52f; --ghost:#4a5a6b;
+  --good:#2ee3a6; --bad:#ff5a6e;
+  --shadow:0 2px 24px rgba(0,0,0,.5); --shadow-sm:0 1px 3px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:14.5px;line-height:1.68;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+::selection{background:var(--accent-soft);color:var(--accent)}
+button{font-family:inherit}
+
+/* top bar */
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:16px;padding:10px 22px;
+  background:color-mix(in srgb,var(--panel) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:11px}
+.mark{width:40px;height:40px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center}
+.brand-name{font-family:var(--font-d);font-weight:600;font-size:19px;line-height:1.05;font-variation-settings:'opsz' 32}
+.brand-name .v{color:var(--accent)}
+.brand-tag{font-family:var(--font-m);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-top:3px}
+.nav{display:flex;gap:2px;margin-left:auto;background:var(--inset);padding:4px;border-radius:12px;border:1px solid var(--line2)}
+.nav button{border:none;background:none;cursor:pointer;font-weight:600;font-size:13px;color:var(--ink2);padding:7px 14px;border-radius:9px}
+.nav button:hover{color:var(--ink)}
+.nav button.active{background:var(--panel);color:var(--accent);box-shadow:var(--shadow-sm)}
+.tools{display:flex;align-items:center;gap:10px}
+.theme-toggle{display:flex;gap:2px;background:var(--inset);border:1px solid var(--line2);border-radius:20px;padding:3px}
+.theme-toggle button{background:none;border:none;cursor:pointer;padding:5px 10px;border-radius:16px;color:var(--ink3);font-size:12px;font-weight:600}
+.theme-toggle button.on{background:var(--panel);color:var(--accent);box-shadow:var(--shadow-sm)}
+.small-link{font-family:var(--font-m);font-size:10.5px;color:var(--ink3);letter-spacing:.04em}
+
+/* layout */
+main{max-width:1480px;margin:0 auto;padding:20px 22px 60px}
+.view{display:none}.view.on{display:block}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.sec-title{font-family:var(--font-d);font-weight:600;font-size:17px;margin:0 0 2px;font-variation-settings:'opsz' 24}
+.sec-sub{font-family:var(--font-m);font-size:10.5px;color:var(--ink3);letter-spacing:.02em}
+.label{font-family:var(--font-m);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin:0 0 6px}
+.btn{font-weight:600;font-size:13px;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink2);padding:8px 14px;border-radius:var(--r-sm);transition:all .15s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.primary:hover{color:#fff;filter:brightness(1.05)}
+.btn.sm{padding:5px 10px;font-size:12px}
+select{font:inherit;font-weight:600;font-size:14px;color:var(--ink);background:var(--inset);border:1px solid var(--line);border-radius:var(--r-sm);padding:8px 10px;width:100%}
+textarea{width:100%;min-height:84px;font:inherit;font-size:14px;color:var(--ink);background:var(--inset);border:1px solid var(--line);border-radius:var(--r-sm);padding:9px 11px;resize:vertical}
+textarea:focus,select:focus{outline:none;border-color:var(--accent)}
+
+/* simulator */
+.sim{display:grid;grid-template-columns:300px 1fr;gap:18px;align-items:start}
+.side{padding:16px;position:sticky;top:76px;max-height:calc(100vh - 92px);overflow:auto}
+.side .desc{font-size:13px;color:var(--ink2);margin:8px 0 12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.knob{margin:10px 0}
+.knob label{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink2);font-weight:600}
+.knob label b{font-family:var(--font-m);font-weight:600;color:var(--ink)}
+.knob input{width:100%;accent-color:var(--accent)}
+.check{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink2);margin:8px 0}
+.check input{accent-color:var(--accent)}
+.banner{padding:14px 16px;margin-bottom:14px;border-left:3px solid var(--accent)}
+.banner p{margin:4px 0}
+.grid9{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.pnl{padding:8px 8px 4px;cursor:zoom-in;border-top:3px solid var(--gc)}
+.pnl[data-g=heart]{--gc:var(--c2)}.pnl[data-g=pump]{--gc:var(--c1)}.pnl[data-g=gas]{--gc:var(--c3)}
+.pnl .pt{font-family:var(--font-d);font-weight:600;font-size:14px;padding:0 4px}
+.pnl .pt span{font-family:var(--font-m);font-size:10px;color:var(--ink3);font-weight:500;margin-left:6px}
+.pnl .pq{font-size:11.5px;color:var(--ink3);padding:0 4px 4px}
+svg.plot{width:100%;height:auto;display:block;border-radius:var(--r-sm)}
+svg.plot .ax{font-family:var(--font-m)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--ink2);margin:10px 2px 0}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.mets{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-top:14px}
+.metric{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-sm);padding:8px 10px 8px 13px;position:relative;overflow:hidden}
+.metric::before{content:'';position:absolute;inset:0 auto 0 0;width:3px;background:var(--mc,var(--good))}
+.metric.bad{--mc:var(--bad)}
+.metric .ml{font-size:11px;font-weight:600;color:var(--ink2)}
+.metric .mv{font-family:var(--font-m);font-size:15px;font-weight:600;letter-spacing:-.02em}
+.metric.bad .mv{color:var(--bad)}
+.metric .mu{font-family:var(--font-m);font-size:9.5px;color:var(--ink3)}
+.read{margin-top:16px;padding:16px}
+.read .out{display:none;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
+.read .out.on{display:block}
+.read .out p{margin:6px 0}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(20,15,10,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:30px}
+.modal.on{display:flex}
+.modal .box{max-width:980px;width:100%;max-height:92vh;overflow:auto;padding:18px 20px}
+.modal .box .look{font-size:14px;color:var(--ink2);margin:10px 0 0}
+
+/* learn / cases */
+.two{display:grid;grid-template-columns:290px 1fr;gap:18px;align-items:start}
+.list{padding:10px;position:sticky;top:76px}
+.list button{display:flex;gap:10px;width:100%;text-align:left;background:none;border:none;border-radius:8px;padding:9px 10px;cursor:pointer;color:var(--ink2)}
+.list button:hover{background:var(--inset)}
+.list button.on{background:var(--accent-soft);color:var(--accent)}
+.list .num{font-family:var(--font-m);font-size:11px;color:var(--ink3);width:18px;flex:none;padding-top:2px}
+.list .tt{font-weight:600;font-size:13.5px;line-height:1.35}
+.list .st{font-size:11.5px;color:var(--ink3)}
+.list .done .num{color:var(--good)}
+.doc{padding:24px 30px;max-width:900px}
+.doc h2{font-family:var(--font-d);font-weight:600;font-size:28px;margin:0;line-height:1.2;font-variation-settings:'opsz' 60}
+.doc .kick{font-family:var(--font-m);font-size:10.5px;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase}
+.doc .lead{color:var(--ink2);margin:4px 0 18px}
+.stage{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin:14px 0;background:var(--panel2)}
+.stage .label{color:var(--accent)}
+.stage.locked{opacity:.5;pointer-events:none;filter:blur(1.5px)}
+.opts{display:grid;gap:6px;margin-top:8px}
+.opts button{text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:9px 12px;cursor:pointer;font-size:14px;color:var(--ink)}
+.opts button:hover{border-color:var(--accent)}
+.opts button.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 12%,var(--panel))}
+.opts button.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--panel))}
+.why{display:none;margin-top:10px;font-size:14px}
+.why.on{display:block}
+.doc p,.doc li{max-width:72ch}
+.eq{font-family:var(--font-m);background:var(--inset);border:1px solid var(--line2);border-radius:var(--r-sm);padding:10px 12px;margin:10px 0;font-size:14px;overflow-x:auto}
+.note{background:var(--accent-soft);border-radius:var(--r-sm);padding:10px 13px;margin:12px 0;font-size:14px}
+.tbl{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;vertical-align:top;padding:7px 9px;border-bottom:1px solid var(--line2)}
+th{font-family:var(--font-m);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);font-weight:500}
+.reveal{display:none;margin-top:8px;background:var(--panel);border:1px solid var(--line2);border-radius:var(--r-sm);padding:10px 12px}
+.reveal.on{display:block}
+.qa{margin:12px 0}
+.qa b{display:block;margin-bottom:6px}
+sup.cite a{font-family:var(--font-m);font-size:9.5px;padding:0 1px}
+.pager{display:flex;justify-content:space-between;margin-top:20px}
+
+/* review */
+.card{max-width:720px;margin:0 auto;padding:26px}
+.fc{min-height:170px;display:flex;flex-direction:column;justify-content:center;cursor:pointer;text-align:center;border:1px solid var(--line);border-radius:var(--r);padding:22px;background:var(--panel2)}
+.fc .q{font-family:var(--font-d);font-size:22px;font-weight:600}
+.fc .a{display:none;margin-top:12px;font-size:16px;color:var(--ink2)}
+.fc.show .a{display:block}
+.boxes{display:flex;gap:6px;justify-content:center;margin:12px 0}
+.boxes span{font-family:var(--font-m);font-size:10.5px;border:1px solid var(--line);border-radius:6px;padding:3px 7px;color:var(--ink3)}
+
+/* reference */
+.refs li{margin:10px 0;padding-left:4px}
+.refs .links{font-family:var(--font-m);font-size:11px;margin-top:2px}
+.refs .links a{margin-right:12px}
+.refs li.hl{background:var(--accent-soft);border-radius:6px}
+.badge{font-family:var(--font-m);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);border:1px solid var(--line);border-radius:10px;padding:1px 7px;margin-left:6px}
+footer{max-width:1480px;margin:0 auto;padding:0 22px 40px;color:var(--ink3);font-size:12px}
+@media(max-width:1100px){.grid9{grid-template-columns:repeat(2,1fr)}.sim{grid-template-columns:260px 1fr}}
+@media(max-width:820px){.sim,.two{grid-template-columns:1fr}.side,.list{position:static;max-height:none}.nav button{padding:7px 9px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="mark"><svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke-linecap="round"><g stroke="var(--line)" stroke-width="1"><path d="M3 3h20v20H3z"/><path d="M9.7 3v20M16.3 3v20M3 9.7h20M3 16.3h20"/></g><path d="M4 20c4-1 6-3 8-7s5-7 10-8" stroke="var(--accent)" stroke-width="2.2"/></svg></div>
+    <div><div class="brand-name">CPET <span class="v">Lab</span></div><div class="brand-tag">Cardiopulmonary exercise testing</div></div>
+  </div>
+  <nav class="nav" id="nav">
+    <button data-v="sim" class="active">Simulator</button>
+    <button data-v="learn">Learn</button>
+    <button data-v="cases">Cases</button>
+    <button data-v="review">Review</button>
+    <button data-v="ref">Reference</button>
+  </nav>
+  <div class="tools">
+    <div class="theme-toggle"><button id="th-champagne" class="on">Champagne</button><button id="th-monitor">Monitor</button></div>
+    <a class="small-link" href="mobile.html?mobile=1">Phone version</a>
+  </div>
+</header>
+
+<main>
+<!-- SIMULATOR -->
+<section class="view on" id="v-sim">
+ <div class="sim">
+  <aside class="panel side">
+   <p class="label">Patient</p>
+   <select id="scen"></select>
+   <p class="desc" id="desc"></p>
+   <div class="row"><button class="btn sm" id="mystery">Unknown patient</button><button class="btn sm" id="revealDx" hidden>Show diagnosis</button></div>
+   <label class="check"><input type="checkbox" id="ghost" checked> Dotted trace: a healthy person of the same age and size</label>
+   <p class="label" style="margin-top:16px">Physiology</p>
+   <div id="knobs"></div>
+   <button class="btn sm" id="resetK">Reset to patient</button>
+  </aside>
+  <div>
+   <div class="panel banner" id="tryBanner" hidden>
+    <p class="label" style="color:var(--accent)">Predict first</p>
+    <p id="tryPrompt"></p>
+    <div class="row" style="margin-top:8px"><button class="btn sm" id="tryShow">Show what to look for</button><button class="btn sm" id="tryBack">Back to the chapter</button></div>
+    <p id="tryLook" hidden style="color:var(--ink2)"></p>
+   </div>
+   <div class="grid9" id="grid9"></div>
+   <div class="legend"><span><i style="background:var(--c2)"></i>Heart and circulation · 2, 3, 5</span><span><i style="background:var(--c1)"></i>Ventilatory pump · 1, 4, 7</span><span><i style="background:var(--c3)"></i>Gas exchange · 6, 8, 9</span><span>Click a panel to enlarge it</span></div>
+   <div class="mets" id="mets"></div>
+   <div class="panel read">
+    <p class="sec-title">Your reading</p>
+    <p class="sec-sub">Write the effort, capacity and limiting system before you compare.</p>
+    <textarea id="myRead" placeholder="Effort … Capacity … Limiting system … Prognosis …" style="margin-top:8px"></textarea>
+    <div class="row" style="margin-top:8px"><button class="btn primary sm" id="cmpBtn">Compare with the app's reading</button></div>
+    <div class="out" id="readOut"></div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- LEARN -->
+<section class="view" id="v-learn"><div class="two"><aside class="panel list" id="chList"></aside><article class="panel doc" id="chDoc"></article></div></section>
+
+<!-- CASES -->
+<section class="view" id="v-cases"><div class="two"><aside class="panel list" id="caseList"></aside><article class="panel doc" id="caseDoc"></article></div></section>
+
+<!-- REVIEW -->
+<section class="view" id="v-review">
+ <div class="panel card">
+  <p class="sec-title">Review</p>
+  <p class="sec-sub" id="dueLine"></p>
+  <div class="boxes" id="boxes"></div>
+  <div class="fc" id="fc"><div class="q" id="fcq"></div><div class="a" id="fca"></div></div>
+  <p style="text-align:center;color:var(--ink3);font-size:12.5px;margin:10px 0">Say the answer aloud, with the reason, before you turn the card.</p>
+  <div class="row" style="justify-content:center">
+   <button class="btn" id="fcMiss">Not yet</button><button class="btn primary" id="fcHit">Knew it, with the reason</button>
+   <button class="btn sm" id="fcAll">Study all cards</button><button class="btn sm" id="fcReset">Reset</button>
+  </div>
+  <p style="color:var(--ink3);font-size:12.5px;margin-top:16px">Cards you know come back after 1, 3, 7, 14, 30, 90 and 180 days. A card you miss starts again tomorrow. Progress is stored in this browser only.</p>
+ </div>
+</section>
+
+<!-- REFERENCE -->
+<section class="view" id="v-ref">
+ <div class="two">
+  <aside class="panel list">
+   <button data-go="nums" class="on"><span class="num">1</span><span><span class="tt">Key numbers</span></span></button>
+   <button data-go="refs"><span class="num">2</span><span><span class="tt">References</span></span></button>
+   <button data-go="model"><span class="num">3</span><span><span class="tt">About the model</span></span></button>
+  </aside>
+  <article class="panel doc" id="refDoc"></article>
+ </div>
+</section>
+</main>
+
+<div class="modal" id="modal"><div class="panel box" id="mbox"></div></div>
+<footer>CPET Lab is for education only. It is not a clinical tool and must not be used for patient care. Open source under the MIT licence.</footer>
+
+<script src="core.js"></script>
+<script>
+(function(){
+'use strict';
+const C=window.CPET,$=id=>document.getElementById(id);
+const store={get(k,d){try{const v=localStorage.getItem('cpetlab_'+k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('cpetlab_'+k,JSON.stringify(v));}catch(e){}}};
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const palette=()=>({plot:css('--plot-bg'),line:css('--line'),grid:css('--grid'),mut:css('--ink3'),ink2:css('--ink2'),c1:css('--c1'),c2:css('--c2'),c3:css('--c3'),ghost:css('--ghost')});
+
+/* theme */
+function setTheme(t){document.documentElement.dataset.theme=t;store.set('theme',t);$('th-champagne').classList.toggle('on',t==='champagne');$('th-monitor').classList.toggle('on',t==='monitor');
+ document.querySelector('meta[name=theme-color]').setAttribute('content',t==='monitor'?'#080b10':'#f3ede4');render();}
+$('th-champagne').onclick=()=>setTheme('champagne');$('th-monitor').onclick=()=>setTheme('monitor');
+
+/* views */
+function show(v){document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.v===v));
+ if(location.hash!=='#'+v)history.replaceState(null,'','#'+v);window.scrollTo(0,0);if(v==='sim')render();if(v==='review')nextCard(true);}
+$('nav').onclick=e=>{const b=e.target.closest('button');if(b)show(b.dataset.v);};
+
+/* ── simulator ── */
+let key='normal',P=C.makeParams('normal'),mystery=false,fromChapter=null;
+const KN=[
+ ['peakKg','Peak VO₂ (mL/kg/min)',6,45,0.5],['vt1','VT1 (fraction of peak)',0.3,0.92,0.01],['slope','Early ΔVO₂/ΔWR (mL/min/W)',5,12,0.1],
+ ['kLate','Late flattening (1 = none)',0.1,1,0.05],['veVco2','VE/VCO₂ slope',20,60,0.5],['hrPeak','Peak HR (bpm)',90,200,1],['mvv','MVV (L/min)',30,200,1],
+ ['petR','Resting PETCO₂ (mmHg)',24,44,0.5],['eov','Oscillatory ventilation (L/min)',0,6,0.1],['spo2P','SpO₂ at peak (%)',78,99,0.5]];
+const dec=s=>s<0.05?2:s<1?(s<0.1?2:1):0;
+function buildKnobs(){$('knobs').innerHTML=KN.map(k=>{const v=k[0]==='peakKg'?P.peak/P.wt:P[k[0]];
+ return '<div class="knob"><label><span>'+k[1]+'</span><b id="kv_'+k[0]+'">'+(+v).toFixed(dec(k[4]))+'</b></label><input type="range" data-k="'+k[0]+'" min="'+k[2]+'" max="'+k[3]+'" step="'+k[4]+'" value="'+v+'"></div>';}).join('');}
+$('knobs').oninput=e=>{const k=e.target.dataset.k;if(!k)return;const v=+e.target.value;if(k==='peakKg')P.peak=v*P.wt;else P[k]=v;
+ const def=KN.find(x=>x[0]===k);$('kv_'+k).textContent=v.toFixed(dec(def[4]));render();};
+function load(k,knobs){key=k;P=Object.assign(C.makeParams(k),knobs||{});buildKnobs();$('ghost').checked=(k!=='normal'||!!(knobs&&Object.keys(knobs).length));
+ $('desc').textContent=mystery?'Unknown patient. Read the nine panels and commit to a diagnosis.':C.SCENARIOS[k].desc;$('readOut').classList.remove('on');render();}
+(function fillSelect(){const groups={};Object.entries(C.SCENARIOS).forEach(([k,s])=>{(groups[s.group]=groups[s.group]||[]).push([k,s.label]);});
+ $('scen').innerHTML=Object.entries(groups).map(([g,a])=>'<optgroup label="'+g+'">'+a.map(([k,l])=>'<option value="'+k+'">'+l+'</option>').join('')+'</optgroup>').join('');})();
+$('scen').onchange=()=>{mystery=false;$('revealDx').hidden=true;load($('scen').value);};
+$('mystery').onclick=()=>{const ks=Object.keys(C.SCENARIOS).filter(k=>k!=='normal'&&k!==key);mystery=true;$('revealDx').hidden=false;$('scen').selectedIndex=-1;load(ks[Math.floor(Math.random()*ks.length)]);};
+$('revealDx').onclick=()=>{mystery=false;$('revealDx').hidden=true;$('scen').value=key;$('desc').innerHTML='<b>'+C.SCENARIOS[key].label+'.</b> '+C.SCENARIOS[key].desc;};
+$('resetK').onclick=()=>load(key);
+$('ghost').onchange=render;
+
+let lastSpecs=null;
+function render(){if(!$('v-sim').classList.contains('on'))return;
+ const col=palette(),S=C.simulate(P),ref=$('ghost').checked?C.simulate(C.healthyTwin(P),7):null,M=C.metrics(S);
+ lastSpecs=C.panelSpecs(S,ref,col);
+ $('grid9').innerHTML=C.PANELS.map((p,i)=>'<div class="panel pnl" data-g="'+p.g+'" data-i="'+i+'"><div class="pt">'+p.n+'. '+p.t+'<span>'+p.ax+'</span></div><div class="pq">'+p.q+'</div>'+C.plot(lastSpecs[i],col)+'</div>').join('');
+ $('mets').innerHTML=C.metricRows(M).map(r=>'<div class="metric'+(r[3]?' bad':'')+'"><div class="ml">'+r[0]+'</div><div class="mv">'+r[1]+'</div><div class="mu">'+r[2]+'</div></div>').join('');
+ $('readOut').innerHTML=C.interpret(M,P).map(x=>'<p>'+x+'</p>').join('')+'<p style="color:var(--ink3);font-size:12px">A rule-based reading for teaching. A real report also uses symptoms, ECG, blood pressure and the referral question.</p>';
+ $('myRead').value=store.get('read_'+key,'');}
+$('myRead').oninput=()=>store.set('read_'+key,$('myRead').value);
+$('cmpBtn').onclick=()=>$('readOut').classList.toggle('on');
+$('grid9').onclick=e=>{const el=e.target.closest('.pnl');if(!el)return;const i=+el.dataset.i,p=C.PANELS[i];
+ $('mbox').innerHTML='<div class="row" style="justify-content:space-between"><div><p class="sec-title">'+p.n+'. '+p.t+'</p><p class="sec-sub">'+p.ax+' · '+p.q+'</p></div><button class="btn sm" id="mclose">Close</button></div>'+C.plot(lastSpecs[i],palette(),{w:760,h:420,fs:12})+'<p class="look">'+p.look+'</p>';
+ $('modal').classList.add('on');$('mclose').onclick=()=>$('modal').classList.remove('on');};
+$('modal').onclick=e=>{if(e.target.id==='modal')$('modal').classList.remove('on');};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('modal').classList.remove('on');});
+
+/* try-it banner */
+function tryIt(ch){fromChapter=ch.id;mystery=false;$('revealDx').hidden=true;$('scen').value=ch.try.scen;show('sim');load(ch.try.scen,ch.try.knobs);
+ $('tryBanner').hidden=false;$('tryPrompt').textContent=ch.try.prompt;$('tryLook').textContent=ch.try.look;$('tryLook').hidden=true;}
+$('tryShow').onclick=()=>$('tryLook').hidden=false;
+$('tryBack').onclick=()=>{$('tryBanner').hidden=true;show('learn');openChapter(fromChapter);};
+
+/* citations open the reference list */
+document.addEventListener('click',e=>{const a=e.target.closest('a[data-ref]');if(!a)return;e.preventDefault();show('ref');refPage('refs');
+ const li=document.getElementById('ref-'+a.dataset.ref);if(li){li.classList.add('hl');li.scrollIntoView({block:'center'});setTimeout(()=>li.classList.remove('hl'),2500);}});
+
+/* ── learn ── */
+let prog=store.get('progress',{});
+function chList(){$('chList').innerHTML='<p class="label" style="padding:6px 10px 0">Chapters</p>'+C.CHAPTERS.map(c=>'<button data-c="'+c.id+'" class="'+(prog[c.id]?'done':'')+'"><span class="num">'+(prog[c.id]?'✓':c.n)+'</span><span><span class="tt">'+c.title+'</span><br><span class="st">'+c.sub+'</span></span></button>').join('');}
+$('chList').onclick=e=>{const b=e.target.closest('button');if(b)openChapter(b.dataset.c);};
+function openChapter(id){const ch=C.CHAPTERS.find(c=>c.id===id)||C.CHAPTERS[0];store.set('lastCh',ch.id);
+ document.querySelectorAll('#chList button').forEach(b=>b.classList.toggle('on',b.dataset.c===ch.id));
+ const answered=store.get('ask_'+ch.id,null);
+ const i=C.CHAPTERS.indexOf(ch),prev=C.CHAPTERS[i-1],next=C.CHAPTERS[i+1];
+ $('chDoc').innerHTML='<div class="kick">Chapter '+ch.n+'</div><h2>'+ch.title+'</h2><p class="lead">'+ch.sub+'</p>'+
+ '<div class="stage"><p class="label">Before you read</p><p>'+ch.ask.q+'</p><div class="opts" id="opts">'+ch.ask.opts.map((o,j)=>'<button data-j="'+j+'">'+o+'</button>').join('')+'</div><p class="why" id="why">'+C.cite(ch.ask.why)+'</p></div>'+
+ '<div class="stage'+(answered===null?' locked':'')+'" id="idea"><p class="label">The idea</p>'+C.cite(ch.idea)+'</div>'+
+ '<div class="stage'+(answered===null?' locked':'')+'"><p class="label">Try it</p><p>'+ch.try.prompt+'</p><button class="btn primary sm" id="tryBtn">Open in the simulator</button></div>'+
+ '<div class="stage'+(answered===null?' locked':'')+'"><p class="label">Check yourself</p>'+ch.check.map((q,j)=>'<div class="qa"><b>'+q[0]+'</b><textarea data-n="chk_'+ch.id+'_'+j+'" placeholder="Your answer"></textarea><button class="btn sm" data-r="r'+j+'" style="margin-top:6px">Show answer</button><div class="reveal" id="r'+j+'">'+C.cite(q[1])+'</div></div>').join('')+'</div>'+
+ '<div class="stage'+(answered===null?' locked':'')+'"><p class="label">Say it in your own words</p><p>'+ch.say.prompt+'</p><textarea data-n="say_'+ch.id+'" placeholder="Plain words. If you reach for jargon, that is the part to re-read." style="min-height:120px"></textarea><div class="row" style="margin-top:8px"><button class="btn sm" data-r="rs">Compare with a model answer</button><button class="btn primary sm" id="doneBtn">'+(prog[ch.id]?'Completed':'Mark chapter complete')+'</button></div><div class="reveal" id="rs">'+C.cite(ch.say.model)+'<p style="color:var(--ink3);font-size:12.5px;margin:8px 0 0">Note anything the model answer said that yours did not. That is the part to read again.</p></div></div>'+
+ '<div class="pager">'+(prev?'<button class="btn sm" data-c="'+prev.id+'">← '+prev.title+'</button>':'<span></span>')+(next?'<button class="btn sm" data-c="'+next.id+'">'+next.title+' →</button>':'')+'</div>';
+ if(answered!==null)markAsk(ch,answered);
+ $('opts').onclick=e=>{const b=e.target.closest('button');if(!b)return;const j=+b.dataset.j;store.set('ask_'+ch.id,j);markAsk(ch,j);document.querySelectorAll('#chDoc .stage.locked').forEach(s=>s.classList.remove('locked'));};
+ $('tryBtn').onclick=()=>tryIt(ch);
+ $('doneBtn').onclick=()=>{prog[ch.id]=true;store.set('progress',prog);$('doneBtn').textContent='Completed';chList();document.querySelector('#chList button[data-c="'+ch.id+'"]').classList.add('on');};
+ wireNotes($('chDoc'));window.scrollTo(0,0);}
+function markAsk(ch,j){document.querySelectorAll('#opts button').forEach((b,k)=>{b.classList.toggle('right',k===ch.ask.a);b.classList.toggle('wrong',k===j&&j!==ch.ask.a);});$('why').classList.add('on');}
+$('chDoc').addEventListener('click',e=>{const r=e.target.dataset.r;if(r)document.getElementById(r).classList.toggle('on');const c=e.target.dataset.c;if(c)openChapter(c);});
+function wireNotes(root){root.querySelectorAll('textarea[data-n]').forEach(t=>{t.value=store.get(t.dataset.n,'');t.oninput=()=>store.set(t.dataset.n,t.value);});}
+
+/* ── cases ── */
+function caseList(){$('caseList').innerHTML='<p class="label" style="padding:6px 10px 0">Cases</p>'+C.CASES.map((c,i)=>'<button data-k="'+i+'"><span class="num">'+(i+1)+'</span><span class="tt">'+c.t+'</span></button>').join('');}
+$('caseList').onclick=e=>{const b=e.target.closest('button');if(b)openCase(+b.dataset.k);};
+function openCase(i){const c=C.CASES[i];document.querySelectorAll('#caseList button').forEach(b=>b.classList.toggle('on',+b.dataset.k===i));
+ $('caseDoc').innerHTML='<div class="kick">Case '+(i+1)+'</div><h2>'+c.t+'</h2><p class="lead">'+c.v+'</p><div class="tbl"><table>'+c.d.map(r=>'<tr><th style="width:38%">'+r[0]+'</th><td>'+r[1]+'</td></tr>').join('')+'</table></div>'+
+ c.s.map((s,j)=>'<div class="stage"><p class="label">Question '+(j+1)+'</p><p><b>'+s[0]+'</b></p><textarea data-n="case_'+i+'_'+j+'" placeholder="Commit to an answer first"></textarea><button class="btn sm" data-r="cr'+j+'" style="margin-top:6px">Show answer</button><div class="reveal" id="cr'+j+'">'+C.cite(s[1])+'</div></div>').join('')+
+ (c.scen?'<button class="btn primary" id="caseSim">Open this patient in the simulator</button>':'')+
+ '<p style="color:var(--ink3);font-size:12px;margin-top:14px">Teaching cases built for this app. The simulator shows a matching pattern; its numbers will not match the table exactly.</p>';
+ if(c.scen)$('caseSim').onclick=()=>{mystery=false;$('tryBanner').hidden=true;$('scen').value=c.scen;show('sim');load(c.scen);};
+ wireNotes($('caseDoc'));}
+$('caseDoc').addEventListener('click',e=>{const r=e.target.dataset.r;if(r)document.getElementById(r).classList.toggle('on');});
+
+/* ── review ── */
+const IV=[0,1,3,7,14,30,90,180];let deck=store.get('deck',{}),queue=[],cur=null,allMode=false;
+const today=()=>Math.floor(Date.now()/86400000);
+function buildQueue(){queue=C.CARDS.map((c,i)=>i).filter(i=>allMode||!deck[i]||deck[i].due<=today());for(let i=queue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[queue[i],queue[j]]=[queue[j],queue[i]];}}
+function stats(){const b=[0,0,0,0,0,0,0,0];C.CARDS.forEach((c,i)=>b[deck[i]?deck[i].box:0]++);
+ $('boxes').innerHTML=b.map((n,i)=>'<span title="'+(i?'Interval '+IV[i]+' days':'New')+'">'+(i?IV[i]+'d':'new')+' · '+n+'</span>').join('');
+ $('dueLine').textContent=(queue.length+(cur!==null?1:0))+' card(s) due now';}
+function nextCard(rebuild){if(rebuild)buildQueue();$('fc').classList.remove('show');
+ if(!queue.length){cur=null;$('fcq').textContent='Nothing due. Come back tomorrow.';$('fca').textContent='';stats();return;}
+ cur=queue.shift();$('fcq').textContent=C.CARDS[cur][0];$('fca').textContent=C.CARDS[cur][1];stats();}
+function grade(ok){if(cur===null)return;const d=deck[cur]||{box:0};if(ok){d.box=Math.min(7,d.box+1);d.due=today()+IV[d.box];}else{d.box=1;d.due=today()+1;queue.push(cur);}deck[cur]=d;store.set('deck',deck);nextCard(false);}
+$('fc').onclick=()=>$('fc').classList.toggle('show');
+$('fcHit').onclick=()=>grade(true);$('fcMiss').onclick=()=>grade(false);
+$('fcAll').onclick=()=>{allMode=!allMode;$('fcAll').textContent=allMode?'Due cards only':'Study all cards';nextCard(true);};
+let arm=false;$('fcReset').onclick=()=>{if(!arm){arm=true;$('fcReset').textContent='Tap again to reset';setTimeout(()=>{arm=false;$('fcReset').textContent='Reset';},3000);return;}deck={};store.set('deck',deck);arm=false;$('fcReset').textContent='Reset';nextCard(true);};
+
+/* ── reference ── */
+const NUMS=[['Peak VO₂','85% predicted or more is normal. Weber A above 20, B 16 to 20, C 10 to 16, D under 10 mL/kg/min','[8]'],
+ ['Peak RER','1.10 or more indicates good effort; ISHLT uses 1.05','[1,5]'],['VT1','Above 40% of predicted peak VO₂','[2]'],
+ ['VE/VCO₂ slope','Under 30 normal; class II 30 to 35.9, III 36 to 44.9, IV 45 or more','[9,10]'],['PETCO₂','36 to 42 mmHg at rest, rising 3 to 8 to VT1; under 33 at rest is adverse in HF','[2]'],
+ ['ΔVO₂/ΔWR','About 10 mL/min/W; under 8.4 abnormal','[1,24]'],['O₂ pulse','80% of predicted or more, rising to near peak','[1]'],
+ ['HR reserve','Over 15 bpm at maximal effort suggests chronotropic incompetence','[1]'],['Breathing reserve','Under 15% (or 11 L/min) indicates ventilatory limitation','[4]'],
+ ['SpO₂','A fall of 4 to 5 points, or below 88%, is significant','[4]'],['Oscillatory ventilation','Absent normally; adverse in HF','[11]'],
+ ['ISHLT 2016','12 or less on beta-blocker, 14 or less without; 50% predicted in women and under 50; VE/VCO₂ above 35 if RER under 1.05; lean mass-adjusted under 19 if BMI above 30','[5]'],
+ ['ESC/ERS 2022 PH risk','Low: peak VO₂ above 15 and slope under 36. High: peak VO₂ under 11 or slope 45 or more','[21]'],
+ ['Invasive CPET','HFpEF: exercise PCWP 25 or more. Exercise PH: mPAP/CO slope above 3 mmHg/L/min','[18,21]'],
+ ['Pre-operative','AT under 11 mL/kg/min marks higher risk after major abdominal surgery','[22]']];
+function refPage(p){document.querySelectorAll('#v-ref .list button').forEach(b=>b.classList.toggle('on',b.dataset.go===p));
+ if(p==='nums')$('refDoc').innerHTML='<div class="kick">Reference</div><h2>Key numbers</h2><p class="lead">Thresholds used in this app, with their sources.</p><div class="tbl"><table><tr><th>Variable</th><th>Threshold</th><th>Source</th></tr>'+NUMS.map(r=>'<tr><td><b>'+r[0]+'</b></td><td>'+r[1]+'</td><td>'+C.cite(r[2])+'</td></tr>').join('')+'</table></div>';
+ if(p==='refs')$('refDoc').innerHTML='<div class="kick">Reference</div><h2>References</h2><p class="lead">Each entry was checked against PubMed. "Full text" links go to the free PubMed Central copy where one exists; otherwise use the publisher link.</p><ol class="refs">'+C.REFS.map(r=>'<li id="ref-'+r.id+'">'+r.a+' '+r.t+' <i>'+r.j+'</i>. '+r.y+(r.v?';'+r.v:'')+'.<span class="badge">'+r.topic+'</span><div class="links">'+(r.pmid?'<a href="https://pubmed.ncbi.nlm.nih.gov/'+r.pmid+'/" target="_blank" rel="noopener">PubMed '+r.pmid+'</a>':'')+(r.doi?'<a href="https://doi.org/'+r.doi+'" target="_blank" rel="noopener">Publisher</a>':'')+(r.pmc?'<a href="https://pmc.ncbi.nlm.nih.gov/articles/'+r.pmc+'/" target="_blank" rel="noopener">Full text (PMC)</a>':'')+'</div></li>').join('')+'</ol>';
+ if(p==='model')$('refDoc').innerHTML='<div class="kick">Reference</div><h2>About the model</h2><p class="lead">How the curves are made, and what they cannot do.</p>'+C.cite('<p>Each test is a 2 minute rest, 2 minutes of unloaded pedalling, a 10 minute individualised ramp and 3 minutes of recovery, sampled every 10 seconds with breath-by-breath noise added.</p><ul><li>VO₂ rises with work at a set ΔVO₂/ΔWR, with an optional late flattening.</li><li>VCO₂ follows VO₂ with a slope near 1 until VT1, then steepens as bicarbonate buffering adds CO₂ (the V-slope relationship) [13].</li><li>VE is a linear function of VCO₂ (the VE/VCO₂ slope) with extra ventilation after the respiratory compensation point, an optional ceiling at MVV and optional oscillation.</li><li>HR rises with VO₂ or with work; the O₂ pulse is VO₂ divided by HR.</li><li>PETO₂ comes from the simplified alveolar gas equation.</li><li>The dotted trace is a healthy person with the same age, size and predicted values.</li></ul><p>The model reproduces the shape of each pattern, not the exact values of any patient. It does not model blood pressure, ECG changes, flow-volume loops, lactate or invasive haemodynamics. Interpretation rules are simplified from published statements [1,2,3].</p><p><b>For education only.</b> Not for clinical use. Source code is open under the MIT licence.</p>');}
+document.querySelector('#v-ref .list').onclick=e=>{const b=e.target.closest('button');if(b)refPage(b.dataset.go);};
+
+/* ── start ── */
+chList();openChapter(store.get('lastCh','fick'));caseList();openCase(0);refPage('nums');
+load('normal');$('scen').value='normal';
+setTheme(store.get('theme','champagne'));
+const h=(location.hash||'').slice(1);show(['sim','learn','cases','review','ref'].includes(h)?h:'sim');
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+})();
+</script>
+</body>
+</html>
